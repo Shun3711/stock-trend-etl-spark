@@ -48,7 +48,7 @@ spark_df = spark_df.withColumn(
 )
 
 # 保存先ディレクトリの存在確認
-output_path = "./data/processed/stock_prices.parquet"
+output_path = "../data/processed/stock_prices.parquet"
 os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
 # Parquet保存
