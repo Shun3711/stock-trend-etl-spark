@@ -3,12 +3,10 @@ import pandas as pd
 import os
 
 # 環境変数設定（重要: WindowsのSparkでParquet書き込み対策）
-os.environ["JAVA_HOME"] = r"C:\\Users\\Pupi\\AppData\\Local\\Programs\\Eclipse Adoptium\\jdk-8.0.452.9-hotspot"
-os.environ["HADOOP_HOME"] = r"C:\\hadoop"
-os.environ["SPARK_HOME"] = r"C:\\spark\\spark-3.3.2-bin-hadoop3"
-os.environ["PYSPARK_PYTHON"] = r"C:\\Users\\Pupi\\Desktop\\Git project\\stock-trend-etl-spark\\venv\\Scripts\\python.exe"
-os.environ["HADOOP_OPTS"] = r"-Djava.library.path=C:\hadoop\bin"
-os.environ["PATH"] += r";C:\hadoop\bin"
+try:
+    import env_setup
+except ImportError:
+    pass  # なければ無視
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, lag, round as spark_round
