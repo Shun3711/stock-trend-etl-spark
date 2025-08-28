@@ -26,13 +26,14 @@ END_DATE = "2024-12-31"
 # 株価取得
 def fetch_stock_data(ticker):
     df = yf.download(ticker, start=START_DATE, end=END_DATE, auto_adjust=False)
-    df.columns = [f"{col[0]}" for col in df.columns]
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = [c[0] for c in df.columns]
     df = df.reset_index()
     df["Ticker"] = ticker
     return df[["Date", "Ticker", "Open", "High", "Low", "Close", "Adj Close", "Volume"]]
 
 # 全銘柄結合
-all_data = pd.concat([fetch_stock_data(ticker) for ticker in TICKERS])
+all_data = pd.concat([fetch_stock_data(t) for t in TICKERS], ignore_index=True)
 
 # pandas → Spark
 spark_df = spark.createDataFrame(all_data).dropna()
