@@ -1,5 +1,8 @@
 import yfinance as yf
 import pandas as pd
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, lag, round as spark_round
+from pyspark.sql.window import Window
 import os
 
 # 環境変数設定（重要: WindowsのSparkでParquet書き込み対策）
@@ -8,13 +11,10 @@ try:
 except ImportError:
     pass  # なければ無視
 
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, lag, round as spark_round
-from pyspark.sql.window import Window
 
 # Sparkセッション開始
 spark = SparkSession.builder \
-    .appName("StockPriceETL") \
+    .appName("Test") \
     .master("local[*]") \
     .getOrCreate()
 
@@ -26,14 +26,13 @@ END_DATE = "2024-12-31"
 # 株価取得
 def fetch_stock_data(ticker):
     df = yf.download(ticker, start=START_DATE, end=END_DATE, auto_adjust=False)
-    if isinstance(df.columns, pd.MultiIndex):
-        df.columns = [c[0] for c in df.columns]
     df = df.reset_index()
+    df.columns = [f"{col[0]}" for col in df.columns]
     df["Ticker"] = ticker
     return df[["Date", "Ticker", "Open", "High", "Low", "Close", "Adj Close", "Volume"]]
 
 # 全銘柄結合
-all_data = pd.concat([fetch_stock_data(t) for t in TICKERS], ignore_index=True)
+all_data = pd.concat([fetch_stock_data(ticker) for ticker in TICKERS])
 
 # pandas → Spark
 spark_df = spark.createDataFrame(all_data).dropna()
